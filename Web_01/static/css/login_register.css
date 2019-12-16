@@ -1,0 +1,65 @@
+.form-container {
+    width: 300px;
+    margin: 0 auto;
+}
+.page-title{
+    text-align: center;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.error_input {
+    border: 1px solid red;
+}
+
+/* 改变placeholder的颜色 */
+input::-webkit-input-placeholder {
+    /* WebKit browsers 适配谷歌 */
+    color: rgba(119, 0, 255, 0.938);
+}
+
+input:-moz-placeholder {
+    /* Mozilla Firefox 4 to 18 适配火狐 */
+    color: rgba(119, 0, 255, 0.938);
+}
+
+input::-moz-placeholder {
+    /* Mozilla Firefox 19+ 适配火狐 */
+    color: rgba(119, 0, 255, 0.938);
+}
+
+input:-ms-input-placeholder {
+    /* Internet Explorer 10+  适配ie*/
+    color: rgba(119, 0, 255, 0.938);
+}
+
+#sjh {
+    width: 30%;
+    margin: 0 auto;
+    margin-top: 10%;
+    /* border: 1px solid black; */
+}
+
+input {
+    width: 300px;
+    height: 30px;
+    padding-left: 5%;
+    margin-bottom: 2%;
+    border-radius: 5px;
+    border: 1px solid rgb(48, 162, 255);
+    outline: medium;
+}
+
+.a,
+.ab,
+.abc,
+.abcd,
+.abcde,
+.abcdef,
+.abcdefg {
+    font-size: 10px;
+    color: red;
+}

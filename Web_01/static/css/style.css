@@ -1,0 +1,18 @@
+.logo{
+    width: 70px;
+}
+.navbar-brand{
+    padding: 0px 0px 0px 0px;
+}
+
+.content{
+    width: 730px;
+    overflow: hidden;
+    margin: 0 auto;
+    border-style:solid;
+    /*background-color: #ffff00;*/
+    border-color: #dddddd;
+    border-width: 1px;
+    border-radius: 4px 4px 0 0;
+    box-shadow: none;
+}
