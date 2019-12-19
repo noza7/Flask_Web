@@ -1,12 +1,16 @@
 from datetime import timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from wtforms import SubmitField
 
 import config
 from exts import db
 from models import User
 
 from functools import wraps
+
+from flask_wtf.file import FileField, FileRequired, FileAllowed
+from flask_wtf import FlaskForm
 
 app = Flask(__name__)
 # 设置静态文件缓存过期时间
@@ -28,10 +32,29 @@ def login_required(func):
     return wrapper
 
 
+# 文件上传
+class UploadForm(FlaskForm):
+    photo = FileField('Upload Image', validators=[FileRequired(), FileAllowed(['jpg', 'jpeg', 'png', 'gif'])])
+    submit = SubmitField()
+
+
 @app.route('/')
 @login_required
 def index():
     return render_template('index.html')
+
+
+@app.route('/chengzhao/')
+@login_required
+def chengzhao():
+    return render_template('chengzhao.html')
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload():
+    form = UploadForm()
+    return render_template('chengzhao.html', form=form)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
