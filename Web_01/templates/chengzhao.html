@@ -6,8 +6,22 @@
 {% block content %}
 
     <div style="text-align: center">
-        <h3 class="page-title">成招</h3>
-
-
+        <h3 class="page-title">成招-生成成绩单</h3>
+        <hr>
+        <form role="form" method="post" name="excel_file" enctype="multipart/form-data">
+            <input type="file" name="excel_upload" class="form-control">
+{#            <input type="submit" value="提交" class="form-control">#}
+            <button type="submit" class="btn btn-default" style="width: 30%">提交</button>
+        </form>
+        <hr>
+        <form role="form" method="get" name="del_excel_files" enctype="multipart/form-data">
+            <h5 style="color: red">清空文件重新上传！</h5>
+{#            <input type="submit" value="清空文件" class="form-control">#}
+            <button type="submit" class="btn btn-default" style="width: 30%">清空文件</button>
+        </form>
+        <hr>
+        <div class="form-group" >
+            <button class="btn btn-default" style="width: 30%"><a href="{{ url_for('chengzhaodownload') }}">开始处理</a></button>
+        </div>
     </div>
 {% endblock %}
