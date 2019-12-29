@@ -9,19 +9,29 @@
         <h3 class="page-title">成招-生成成绩单</h3>
         <hr>
         <form role="form" method="post" name="excel_file" enctype="multipart/form-data">
+            <h5 style="color: red">上传文件前请注意，文件名不能修改，文件必须按照模板填写！</h5>
+            <ul>
+                <li>成绩单文件模板：<a href="{{ scores_path }}">scores.xlsx</a></li>
+                <li>成绩模板文件模板：<a href="{{ template_path }}">templte.xlsx</a></li>
+            </ul>
             <input type="file" name="excel_upload" class="form-control">
-{#            <input type="submit" value="提交" class="form-control">#}
+            {#            <input type="submit" value="提交" class="form-control">#}
             <button type="submit" class="btn btn-default" style="width: 30%">提交</button>
         </form>
         <hr>
         <form role="form" method="get" name="del_excel_files" enctype="multipart/form-data">
             <h5 style="color: red">清空文件重新上传！</h5>
-{#            <input type="submit" value="清空文件" class="form-control">#}
+            {#            <input type="submit" value="清空文件" class="form-control">#}
             <button type="submit" class="btn btn-default" style="width: 30%">清空文件</button>
         </form>
         <hr>
-        <div class="form-group" >
-            <button class="btn btn-default" style="width: 30%"><a href="{{ url_for('chengzhaodownload') }}">开始处理</a></button>
+        <div class="form-group">
+            <button class="btn btn-default" style="width: 30%"><a href="{{ url_for('chengzhaodownload') }}">开始处理</a>
+            </button>
+            <hr>
+            {% if output_file_url %}
+                <a href="{{ output_file_url }}" style="color: red;">请下载成绩单</a>
+            {% endif %}
         </div>
     </div>
 {% endblock %}

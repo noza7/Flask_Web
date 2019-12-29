@@ -4,11 +4,9 @@ from datetime import timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, flash, make_response, send_from_directory
 
 import config
-from exts import db, creat_folder, delfile, multi_tables
+from exts import db, creat_folder, chengzhao_output_scores_tables, to_zip, part_print_do
 from models import User
-
 from functools import wraps
-
 from flask_uploads import UploadSet, DOCUMENTS, configure_uploads
 
 app = Flask(__name__)
@@ -45,9 +43,22 @@ def upload_set(path, set_name, FILE_TYPE):
 
 
 # Upload Sets,管理上传集合
-chengzhao_app_path, chengzhao_set = upload_set(path=r'\chengzhao\temp', set_name='chengzhao', FILE_TYPE=DOCUMENTS)
-# 绑定 app 与 UploadSets
-configure_uploads(app, chengzhao_set)
+# 成招临时文件集合
+chengzhao_temp_app_path, chengzhao_temp_set = upload_set(path=r'\chengzhao\temp', set_name='chengzhaotemp',
+                                                         FILE_TYPE=DOCUMENTS)
+# 绑定 app 与 UploadSets（成招临时文件）
+configure_uploads(app, chengzhao_temp_set)
+
+# 开放教育临时文件集合
+kfjy_temp_app_path, kfjy_temp_set = upload_set(path=r'\kfjy\temp', set_name='kfjytemp', FILE_TYPE=DOCUMENTS)
+# 绑定 app 与 UploadSets（成招临时文件）
+configure_uploads(app, kfjy_temp_set)
+
+# 模板文件集合
+templatefiles_path, templatefiles_set = upload_set(path=r'\templatefiles', set_name='templatefiles',
+                                                   FILE_TYPE=DOCUMENTS)
+# 绑定 app 与 UploadSets（模板）
+configure_uploads(app, templatefiles_set)
 
 
 # 登录限制装饰器
@@ -68,46 +79,121 @@ def index():
     return render_template('index.html')
 
 
-# 成招成绩单文件上传
+# 成招成绩单文件上传，生成
 @app.route('/chengzhao/', methods=['GET', 'POST'])
 @login_required
 def chengzhao():
+    scores_path = templatefiles_set.url('scores.xlsx')
+    template_path = templatefiles_set.url('template.xlsx')
     if request.method == 'POST':
         f = request.files['excel_upload']
         if f.filename != '':
             try:
-                f_name = chengzhao_set.save(f)
-                file_url = chengzhao_set.url(f_name)
+                f_name = chengzhao_temp_set.save(f)
+                file_url = chengzhao_temp_set.url(f_name)
                 flash(f'文件{f_name}上传成功！')
                 return render_template('chengzhao.html', file_url=file_url)
             except Exception as e:
                 print(e)
                 flash('请检查文件格式！', category='error')
-                return render_template('chengzhao.html')
+                return render_template('chengzhao.html', scores_path=scores_path, template_path=template_path)
     elif request.method == 'GET':
-        print(chengzhao_app_path)
-        path = chengzhao_app_path  # 文件路径
+        path = chengzhao_temp_app_path  # 文件路径
+        print(path)
         if os.path.exists(path):  # 如果文件存在
-            delfile(path)
+            # 因为需要权限才能进行删除操作，所以只能用这种方法来进行目录的删除操作
+            os.system(f"rd/s/q  {path}")
+            # rmtree(path)
+            # delfile(output_path)
+            # delfile(path)
         else:
             print('没有文件！')  # 则返回文件不存在
-    return render_template('chengzhao.html')
+    return render_template('chengzhao.html', scores_path=scores_path, template_path=template_path)
 
 
-# 成招成绩单生成文件下载
+# 成招成绩单处理
 @app.route('/chengzhaodownload/', methods=['GET'])
 @login_required
 def chengzhaodownload():
     try:
-        multi_tables(chengzhao_app_path)
-        filename = 'result.xlsx'
-        directory = chengzhao_app_path
-        response = make_response(send_from_directory(directory, filename, as_attachment=True))
-        return response
+        # 文件处理
+        # 成绩单输出路径
+        output_path = chengzhao_temp_app_path + r'\output'
+        flash('正在处理中，请稍后......')
+        chengzhao_output_scores_tables(chengzhao_temp_app_path)
+        flash('正在压缩，请稍后......')
+        # 压缩文件夹
+        to_zip(output_path)
+        # 要返回的文件路径
+        output_file_url = chengzhao_temp_set.url('output.zip')
+        # 删除 output 文件夹
+        # delfile(output_path)
+        # print(output_file_url)
+        # 文件下载
+        # filename = 'output.zip'
+        # directory = chengzhao_app_path
+        # response = make_response(send_from_directory(directory, filename, as_attachment=True))
+        return render_template('chengzhao.html', output_file_url=output_file_url)
     except Exception as e:
         print(e)
         flash('文件上传有误，请检查后重新上传！', category='error')
         return render_template('chengzhao.html')
+
+
+# 开放教育
+@app.route('/kfjy/', methods=['GET', 'POST'])
+@login_required
+def kfjy():
+    return render_template('kfjy/kfjy.html')
+
+
+# 打印门贴签到表
+@app.route('/PartPrint/', methods=['GET', 'POST'])
+@login_required
+def partprint():
+    kcqkb_path = templatefiles_set.url('kcqkb.xls')
+    if request.method == 'POST':
+        f = request.files['excel_upload']
+        if f.filename != '':
+            try:
+                f_name = kfjy_temp_set.save(f)
+                file_url = kfjy_temp_set.url(f_name)
+                flash(f'文件{f_name}上传成功！')
+                return render_template('kfjy/PartPrint.html', file_url=file_url, kcqkb_path=kcqkb_path)
+            except Exception as e:
+                print(e)
+                flash('请检查文件格式！', category='error')
+                return render_template('kfjy/PartPrint.html', kcqkb_path=kcqkb_path)
+    elif request.method == 'GET':
+        path = kfjy_temp_app_path  # 文件路径
+        print(path)
+        if os.path.exists(path):  # 如果文件存在
+            # 因为需要权限才能进行删除操作，所以只能用这种方法来进行目录的删除操作
+            os.system(f"rd/s/q  {path}")
+        else:
+            print('没有文件！')  # 则返回文件不存在
+    return render_template('kfjy/PartPrint.html', kcqkb_path=kcqkb_path)
+
+
+# 打印门贴签到表处理
+@app.route('/PartPrintDo/', methods=['GET'])
+@login_required
+def partprintdo():
+    try:
+        # 文件处理
+        # 成绩单输出路径
+        file_path1 = kfjy_temp_app_path + r'\kcqkb.xls'
+        file_path2 = kfjy_temp_app_path + r'\data.txt'
+        flash('正在处理中，请稍后......')
+        part_print_do(path=file_path1, my_file=file_path2)
+        # 要返回的文件路径
+        output_file_url = kfjy_temp_set.url('data.txt')
+        flash('文件处理完成，请下载！')
+        return render_template('kfjy/PartPrint.html', output_file_url=output_file_url)
+    except Exception as e:
+        print(e)
+        flash('文件上传有误，请检查后重新上传！', category='error')
+        return render_template('kfjy/PartPrint.html')
 
 
 # 登录
@@ -192,4 +278,8 @@ def my_context_processor():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(
+        host='0.0.0.0',
+        port=80,
+        debug=True
+    )

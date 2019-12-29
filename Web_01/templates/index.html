@@ -4,12 +4,15 @@
 {% block head %}{% endblock %}
 
 {% block content %}
-    <h3 class="page-title">首页</h3>
+    <div style="text-align: center">
+        <h3 class="page-title">首页</h3>
+    </div>
+
     <div>
         <ul class="">
             <li><a href="{{ url_for('chengzhao') }}">成招-生成成绩单</a></li>
-            <li><a href="#">Library</a></li>
-            <li class="active">Data</li>
+            <li><a href="{{ url_for('kfjy') }}">开放教育</a></li>
+            <li><a href="{{ url_for('kfjy') }}">统考</a></li>
         </ul>
     </div>
 {% endblock %}
