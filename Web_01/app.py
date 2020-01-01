@@ -204,16 +204,19 @@ def class_arrange():
     class_arrange_path = templatefiles_set.url('class_arrange.xlsx')
     if request.method == 'POST':
         f = request.files['excel_upload']
+        f2 = request.files['excel_upload2']
         # 通过定义全局变量获取教室数
         global g_classroom_num
         g_classroom_num = request.form.get('classroom_num')
         print(g_classroom_num)
-        if f.filename != '':
+        if f.filename != '' and f2.filename != '':
             try:
                 f_name = kfjy_temp_set.save(f)
                 file_url = kfjy_temp_set.url(f_name)
+                f_name2 = kfjy_temp_set.save(f2)
+                file_url2 = kfjy_temp_set.url(f_name2)
                 flash(f'文件{f_name}上传成功！')
-                return render_template('kfjy/ClassArrange.html', file_url=file_url, class_info_path=class_info_path,
+                return render_template('kfjy/ClassArrange.html', file_url=file_url, file_url2=file_url2,class_info_path=class_info_path,
                                        class_arrange_path=class_arrange_path)
             except Exception as e:
                 print(e)
