@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}-首页{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+    <div style="text-align: center">
+        <h3 class="page-title">开放教育课程编排系统</h3>
+        <hr>
+        <div class="form-group">
+            <button class="btn btn-default" style="width: 30%"><a href="{{ url_for('class_arrange') }}">返回上一页</a>
+            </button>
+            <hr>
+            {% if output_file_url %}
+                <a href="{{ output_file_url }}" style="color: red;">请下载结果</a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
