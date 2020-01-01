@@ -216,6 +216,7 @@ def class_arrange():
                 f_name2 = kfjy_temp_set.save(f2)
                 file_url2 = kfjy_temp_set.url(f_name2)
                 flash(f'文件{f_name}上传成功！')
+                flash(f'文件{f_name2}上传成功！')
                 return render_template('kfjy/ClassArrange.html', file_url=file_url, file_url2=file_url2,class_info_path=class_info_path,
                                        class_arrange_path=class_arrange_path)
             except Exception as e:
@@ -231,6 +232,8 @@ def class_arrange():
             os.system(f"rd/s/q  {path}")
         else:
             print('没有文件！')  # 则返回文件不存在
+        return render_template('kfjy/ClassArrange.html', class_info_path=class_info_path,
+                               class_arrange_path=class_arrange_path)
     return render_template('kfjy/ClassArrange.html', class_info_path=class_info_path,
                            class_arrange_path=class_arrange_path)
 
@@ -255,11 +258,11 @@ def class_arrange_process():
         # 要返回的文件路径
         output_file_url = kfjy_temp_set.url('排课结果.xlsx')
         flash('文件处理完成，请下载！')
-        return render_template('kfjy/ClassArrange.html', output_file_url=output_file_url)
+        return render_template('kfjy/ClassArrangeProcess.html', output_file_url=output_file_url)
     except Exception as e:
         print(e)
         flash('文件上传有误，请检查后重新上传！', category='error')
-        return render_template('kfjy/ClassArrange.html')
+        return render_template('kfjy/ClassArrangeProcess.html')
 
 
 # 登录
