@@ -21,7 +21,9 @@
         </div>
         <div style="padding: 20px">
             <form role="form" method="post" name="excel_file" enctype="multipart/form-data">
-                <input type="file" name="excel_upload" class="form-control">
+                <input type="file" name="excel_upload" class="form-control" style="width: 40%;display: inline-block">选择课程信息表&emsp;&emsp;&emsp;&emsp;
+                <hr>
+                <input type="file" name="excel_upload2" class="form-control" style="width: 40%;display: inline-block">选择开放教育开课一览表
                 {#            <input type="submit" value="提交" class="form-control">#}
                 <h5 style="color: red">请输入可排教室数！</h5>
                 <input type="number" class="default" value="" class="form-control" name="classroom_num"
@@ -39,7 +41,8 @@
 
         <hr>
         <div class="form-group">
-                <button class="btn btn-default" style="width: 30%" ><a href="{{ url_for('class_arrange_process') }}">开始处理</a></button>
+            <button class="btn btn-default" style="width: 30%"><a href="{{ url_for('class_arrange_process') }}">开始处理</a>
+            </button>
             <hr>
             {% if output_file_url %}
                 <a href="{{ output_file_url }}" style="color: red;">请下载结果</a>
