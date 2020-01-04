@@ -4,7 +4,8 @@ from datetime import timedelta
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 
 import config
-from exts import db, creat_folder, chengzhao_output_scores_tables, to_zip, part_print_do, class_arrange_do
+from exts import db, creat_folder, chengzhao_output_scores_tables, to_zip, part_print_do, class_arrange_do, \
+    tzd_add_classroom_num_process
 from models import User
 from functools import wraps
 from flask_uploads import UploadSet, DOCUMENTS, configure_uploads
@@ -51,8 +52,13 @@ configure_uploads(app, chengzhao_temp_set)
 
 # 开放教育临时文件集合
 kfjy_temp_app_path, kfjy_temp_set = upload_set(path=r'\kfjy\temp', set_name='kfjytemp', FILE_TYPE=DOCUMENTS)
-# 绑定 app 与 UploadSets（成招临时文件）
+# 绑定 app 与 UploadSets（开放教育临时文件）
 configure_uploads(app, kfjy_temp_set)
+
+# 开放考试临时文件集合
+kfExam_temp_app_path, kfExam_temp_set = upload_set(path=r'\kfexam\temp', set_name='kfexamtemp', FILE_TYPE=DOCUMENTS)
+# 绑定 app 与 UploadSets（开放考试临时文件）
+configure_uploads(app, kfExam_temp_set)
 
 # 模板文件集合
 templatefiles_path, templatefiles_set = upload_set(path=r'\templatefiles', set_name='templatefiles',
@@ -79,7 +85,7 @@ def index():
     return render_template('index.html')
 
 
-# 成招成绩单文件上传，生成
+# 成招成绩单文件上传，生成成绩单
 @app.route('/chengzhao/', methods=['GET', 'POST'])
 @login_required
 def chengzhao():
@@ -140,14 +146,8 @@ def chengzhaodownload():
         return render_template('chengzhao.html')
 
 
-# 开放教育
-@app.route('/kfjy/', methods=['GET', 'POST'])
-@login_required
-def kfjy():
-    return render_template('kfjy/kfjy.html')
-
-
-# 打印门贴签到表
+# 开放考试**************************************************************************************
+# 打印门贴签到表--------------------------------------------------------------------------------
 @app.route('/PartPrint/', methods=['GET', 'POST'])
 @login_required
 def partprint():
@@ -196,7 +196,72 @@ def partprintdo():
         return render_template('kfjy/PartPrint.html')
 
 
-# 开放教育课程编排
+# 通知单加教室号--------------------------------------------------------------------------------
+@app.route('/tzdAddClassroomNum/', methods=['GET', 'POST'])
+@login_required
+def tzd_add_classroom_num():
+    kcqkb_path = templatefiles_set.url('kcqkb.xls')  # 考场情况表路径
+    tzd_path = templatefiles_set.url('tzd.xlsx')  # 考场情况表路径
+    if request.method == 'POST':
+        f = request.files['excel_upload']
+        f2 = request.files['excel_upload2']
+        if f.filename != '' and f2.filename != '':
+            try:
+                f_name = kfExam_temp_set.save(f)
+                file_url = kfExam_temp_set.url(f_name)
+                f_name2 = kfExam_temp_set.save(f2)
+                file_url2 = kfExam_temp_set.url(f_name2)
+                flash(f'文件{f_name}上传成功！')
+                flash(f'文件{f_name2}上传成功！')
+                return render_template('kfExam/tzdAddClassroomNum.html', file_url=file_url, file_url2=file_url2,
+                                       kcqkb_path=kcqkb_path, tzd_path=tzd_path)
+            except Exception as e:
+                print(e)
+                flash('请检查文件格式！', category='error')
+                return render_template('kfExam/tzdAddClassroomNum.html',
+                                       kcqkb_path=kcqkb_path, tzd_path=tzd_path)
+    elif request.method == 'GET':
+        path = kfExam_temp_app_path  # 文件路径
+        print(path)
+        if os.path.exists(path):  # 如果文件存在
+            # 因为需要权限才能进行删除操作，所以只能用这种方法来进行目录的删除操作
+            os.system(f"rd/s/q  {path}")
+        else:
+            print('没有文件！')  # 则返回文件不存在
+        return render_template('kfExam/tzdAddClassroomNum.html', kcqkb_path=kcqkb_path, tzd_path=tzd_path)
+    return render_template('kfExam/tzdAddClassroomNum.html', kcqkb_path=kcqkb_path, tzd_path=tzd_path)
+
+
+# 通知单加教室号程序处理
+@app.route('/tzdAddClassroomNumDo/', methods=['GET'])
+@login_required
+def tzd_add_classroom_num_do():
+    try:
+        # 文件处理
+        # 输出路径
+        kcqkb_path = kfExam_temp_app_path + r'\kcqkb.xls'
+        tzd_path = kfExam_temp_app_path + r'\tzd.xlsx'
+        output_path = kfExam_temp_app_path + r'\考试通知单.xlsx'
+        flash('正在处理中，请稍后......')
+        tzd_add_classroom_num_process(kcqkb_path=kcqkb_path, tzd_path=tzd_path, output_path=output_path)
+        # 要返回的文件路径
+        output_file_url = kfExam_temp_set.url('考试通知单.xlsx')
+        flash('文件处理完成，请下载！')
+        return render_template('result.html', output_file_url=output_file_url)
+    except Exception as e:
+        print(e)
+        flash('文件上传有误，请检查后重新上传！', category='error')
+        return render_template('result.html')
+
+
+# 开放教育**************************************************************************************
+@app.route('/kfjy/', methods=['GET', 'POST'])
+@login_required
+def kfjy():
+    return render_template('kfjy/kfjy.html')
+
+
+# 开放教育课程编排------------------------------------------------------------------------------
 @app.route('/ClassArrange/', methods=['GET', 'POST'])
 @login_required
 def class_arrange():
@@ -217,7 +282,8 @@ def class_arrange():
                 file_url2 = kfjy_temp_set.url(f_name2)
                 flash(f'文件{f_name}上传成功！')
                 flash(f'文件{f_name2}上传成功！')
-                return render_template('kfjy/ClassArrange.html', file_url=file_url, file_url2=file_url2,class_info_path=class_info_path,
+                return render_template('kfjy/ClassArrange.html', file_url=file_url, file_url2=file_url2,
+                                       class_info_path=class_info_path,
                                        class_arrange_path=class_arrange_path)
             except Exception as e:
                 print(e)

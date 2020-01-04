@@ -394,3 +394,61 @@ def class_arrange_do(path, CLASSROOM_NUM, class_info_path, output_path):
     writer = pd.ExcelWriter(output_path + '排课结果.xlsx')
     data_all.to_excel(writer, '排课结果', index=False)
     writer.save()
+
+
+'''
+通知单加教室号-----------------------------------------------------------------------------------
+'''
+
+
+def tzd_add_classroom_num_process(kcqkb_path='考场安排表/考场情况表.xls', tzd_path='考场安排表/考试通知单.xlsx', output_path=''):
+    '''
+    通知单加教室号
+    :param kcqkb_path: 考场情况表路径
+    :param tzd_path: 考试通知单路径
+    :param output_path: 返回结果路径
+    :return:
+    '''
+    df = pd.read_excel(io=kcqkb_path, sheet_name='排考')
+    df = df.fillna(method='ffill')
+    df = df.astype(str)
+    # 提取数据并转化为列表
+    exam_room_nums_ = df['考场号'].values.tolist()
+    classroom_nums_ = df['教室'].values.tolist()
+    # 考场号号数值型转换为字符型
+    exam_room_nums = []
+    for i in exam_room_nums_:
+        exam_room_nums.append(str(int(float(i))))
+    # 教室号数值型转换为字符型
+    classroom_nums = []
+    for i in classroom_nums_:
+        classroom_nums.append(str(int(float(i))))
+    # 列表合并
+    values = []
+    for i in range(len(exam_room_nums)):
+        value = '{}({}教室)'.format(exam_room_nums[i], classroom_nums[i])
+        values.append(value)
+
+    # 生成教室号字典
+    classroom = dict(zip(exam_room_nums, values))
+
+    # print(classroom)
+    # ---------------------------------------------------------------
+    # todo 修改教室号
+    # 修改教室号
+    def modify(tzd_path, classroom, output_path):
+        # tzd_path = eval(repr(tzd_path).replace(r'\\', '/'))
+        # output_path = eval(repr(output_path).replace(r'\\', '/'))
+        wb = load_workbook(tzd_path)
+        # 获取行数
+        rows = wb['sheet1'].max_row
+        print(rows)
+        # 替换考场号为字典内容
+        for i in range(1, rows):
+            value = wb['sheet1']['d' + str(i)].value
+            if value in classroom.keys():
+                wb['sheet1']['d' + str(i)].value = classroom.get(value)
+        wb.save(output_path)
+        wb.close()
+
+    modify(tzd_path, classroom, output_path)

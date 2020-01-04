@@ -23,14 +23,24 @@
                 <li><a href="{{ url_for('chengzhao') }}">成招-生成成绩单</a></li>
             </ul>
         </details>
-{#        <hr>#}
+        {#        <hr>#}
         <details>
             <summary class="btn">开放教育</summary>
             <ul class="">
-                <li><a href="{{ url_for('partprint') }}">打印门贴签到表</a></li>
-            </ul>
-            <ul class="">
                 <li><a href="{{ url_for('class_arrange') }}">开放教育课程编排系统</a></li>
+            </ul>
+        </details>
+        <details>
+            <summary class="btn">开放考试</summary>
+            <ul class="">
+                <li><a href="{{ url_for('partprint') }}">打印门贴签到表</a></li>
+                <li><a href="{{ url_for('tzd_add_classroom_num') }}">通知单加教室号</a></li>
+            </ul>
+        </details>
+        <details>
+            <summary class="btn">统考</summary>
+            <ul class="">
+                <li><a href="{{ url_for('partprint') }}">打印门贴签到表</a></li>
             </ul>
         </details>
     </div>
